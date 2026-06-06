@@ -1,0 +1,11 @@
+.gradio-container {
+    max-width: 100% !important;
+}
+
+footer {
+    display: none !important;
+}
+
+h1 {
+    text-align: center;
+}
