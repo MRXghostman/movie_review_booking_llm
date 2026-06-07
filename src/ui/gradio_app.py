@@ -2,6 +2,35 @@ import gradio as gr
 from src.graph.graph import app
 
 def chat_message(message, system_prompt, history):
+
+    logs = []
+
+    for update in app.stream(
+        {
+            "query": message,
+            "messages": history,
+            "system_prompt": system_prompt,
+            "status": "",
+            "plan": "",
+            "search_result": "",
+            "response": ""
+        },
+        stream_mode="updates"
+    ):
+        for node_name, node_update in update.items():
+            if "status" in node_update:
+                logs.append(node_update["status"])
+                yield (
+                    gr.update(),
+                    history,
+                    node_update["status"],
+                    "\n".join(logs),
+                    None,
+                    None,
+                    None,
+                    None
+                )        
+
     result = app.invoke(
         {
             "query": message,
@@ -27,7 +56,7 @@ def chat_message(message, system_prompt, history):
     })
 
 
-    return "", history, result["status"], f"{result['plan']}", None, None, None, None
+    yield ("", history, result["status"], "\n".join(logs), None, None, None, None)
 
 
 with gr.Blocks(
