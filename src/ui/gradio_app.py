@@ -1,100 +1,33 @@
 import gradio as gr
-from datetime import datetime
-import time
-
+from src.graph.graph import app
 
 def chat_message(message, system_prompt, history):
-
-    log = (
-        f"[{datetime.now().strftime('%H:%M:%S')}]\n"
-        f"Received query: {message}"
-    )
-
-    workflow = """
-🟡 Intent Analysis
-⚪ Memory Retrieval
-⚪ Planner Agent
-⚪ TMDB Search
-⚪ IMDb Search
-⚪ Reddit Search
-⚪ Theatre Search
-⚪ Validator
-⚪ Recommendation Agent
-"""
-
-    yield (
-        "",
-        history,
-        workflow,
-        log,
-        None,
-        None,
-        None,
-        None
-    )
-
-    time.sleep(1)
-
-    workflow = """
-🟢 Intent Analysis
-🟡 Memory Retrieval
-⚪ Planner Agent
-⚪ TMDB Search
-⚪ IMDb Search
-⚪ Reddit Search
-⚪ Theatre Search
-⚪ Validator
-⚪ Recommendation Agent
-"""
-
-    log += "\nRetrieved user preferences"
-
-    yield (
-        "",
-        history,
-        workflow,
-        log,
-        None,
-        None,
-        None,
-        None
-    )
-
-    time.sleep(1)
-
-    workflow = """
-🟢 Intent Analysis
-🟢 Memory Retrieval
-🟢 Planner Agent
-🟢 TMDB Search
-🟢 IMDb Search
-🟢 Reddit Search
-🟢 Theatre Search
-🟢 Validator
-🟢 Recommendation Agent
-"""
-
-    history = history + [
+    result = app.invoke(
         {
-            "role": "user",
-            "content": message
-        },
-        {
-            "role": "assistant",
-            "content": f"Searching movies for: {message}"
+            "query": message,
+            "messages": history,
+            "system_prompt": system_prompt,
+            "status": "",
+            "plan": "",
+            "search_result": "",
+            "response": ""
         }
-    ]
-
-    yield (
-        "",
-        history,
-        workflow,
-        log,
-        None,
-        None,
-        None,
-        None
     )
+
+    history = history or []
+
+    history.append({
+        "role": "user",
+        "content": message
+    })
+
+    history.append({
+        "role": "assistant",
+        "content": result["response"]
+    })
+
+
+    return "", history, result["status"], f"{result['plan']}", None, None, None, None
 
 
 with gr.Blocks(
